@@ -11,42 +11,41 @@ import {
   IUniswapV3Factory,
 } from '../../typechain'
 
-const completeFixture: Fixture<{
-  weth9: IWETH9
-  factory: IUniswapV3Factory
-  router: MockTimeSwapRouter
-  nft: MockTimeNonfungiblePositionManager
-  nftDescriptor: NonfungibleTokenPositionDescriptor
-  tokens: [TestERC20, TestERC20, TestERC20]
-}> = async ([wallet], provider) => {
-  const { weth9, factory, router } = await v3RouterFixture([wallet], provider)
+const completeFixture = async ([wallet]: any) => {
+  const { weth9, factory, router } = await v3RouterFixture([wallet])
 
-  const tokenFactory = await ethers.getContractFactory('TestERC20')
+  const tokenFactory = await ethers.getContractFactory('TestERC20', wallet)
   const tokens: [TestERC20, TestERC20, TestERC20] = [
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20, // do not use maxu256 to avoid overflowing
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
   ]
 
-  const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor')
+  console.log("TOKENS DEPLOYED");
+
+  const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor', wallet)
   const nftDescriptorLibrary = await nftDescriptorLibraryFactory.deploy()
   const positionDescriptorFactory = await ethers.getContractFactory('NonfungibleTokenPositionDescriptor', {
     libraries: {
       NFTDescriptor: nftDescriptorLibrary.address,
     },
-  })
+  },)
   const nftDescriptor = (await positionDescriptorFactory.deploy(
     tokens[0].address,
     // 'ETH' as a bytes32 string
     '0x4554480000000000000000000000000000000000000000000000000000000000'
   )) as NonfungibleTokenPositionDescriptor
 
-  const positionManagerFactory = await ethers.getContractFactory('MockTimeNonfungiblePositionManager')
+  console.log("DESCRIPTOR DEPLOYED");
+
+  const positionManagerFactory = await ethers.getContractFactory('MockTimeNonfungiblePositionManager', wallet)
   const nft = (await positionManagerFactory.deploy(
     factory.address,
     weth9.address,
     nftDescriptor.address
   )) as MockTimeNonfungiblePositionManager
+
+  console.log("NFT POS MANAGER DEPLOYED");
 
   tokens.sort((a, b) => (a.address.toLowerCase() < b.address.toLowerCase() ? -1 : 1))
 

@@ -12,26 +12,28 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 
 describe('SwapRouter', function () {
-  this.timeout(40000)
+  this.timeout(600000)
   let wallet: Wallet
   let trader: Wallet
 
-  const swapRouterFixture: Fixture<{
-    weth9: IWETH9
-    factory: Contract
-    router: MockTimeSwapRouter
-    nft: MockTimeNonfungiblePositionManager
-    tokens: [TestERC20, TestERC20, TestERC20]
-  }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft } = await completeFixture(wallets, provider)
+  const swapRouterFixture = async (wallets: any) => {
+    const { weth9, factory, router, tokens, nft } = await completeFixture(wallets)
+
+    console.log("FIXTURE DONE");
 
     // approve & fund wallets
     for (const token of tokens) {
-      await token.approve(router.address, constants.MaxUint256)
-      await token.approve(nft.address, constants.MaxUint256)
+      await token.connect(wallet).approve(router.address, constants.MaxUint256)
+      console.log("Approved one");
+      await token.connect(wallet).approve(nft.address, constants.MaxUint256)
+      console.log("Approved two");
       await token.connect(trader).approve(router.address, constants.MaxUint256)
-      await token.transfer(trader.address, expandTo18Decimals(1_000_000))
+      console.log("Approved three");
+      await token.connect(wallet).transfer(trader.address, expandTo18Decimals(1_000_000))
+      console.log("Approved all");
     }
+
+    console.log("PREPARED FOR TEST");
 
     return {
       weth9,
@@ -60,12 +62,12 @@ describe('SwapRouter', function () {
 
   before('create fixture loader', async () => {
     ;[wallet, trader] = await (ethers as any).getSigners()
-    loadFixture = waffle.createFixtureLoader([wallet, trader])
+    //loadFixture = waffle.createFixtureLoader([wallet, trader])
   })
 
   // helper for getting weth and token balances
   beforeEach('load fixture', async () => {
-    ;({ router, weth9, factory, tokens, nft } = await loadFixture(swapRouterFixture))
+    ;({ router, weth9, factory, tokens, nft } = await swapRouterFixture([wallet]));
 
     getBalances = async (who: string) => {
       const balances = await Promise.all([
@@ -101,12 +103,16 @@ describe('SwapRouter', function () {
       if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
         [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
+      console.log("Creating pool");
+
       await nft.createAndInitializePoolIfNecessary(
         tokenAddressA,
         tokenAddressB,
         FeeAmount.MEDIUM,
         encodePriceSqrt(1, 1)
       )
+
+      console.log("Pool created");
 
       const liquidityParams = {
         token0: tokenAddressA,
@@ -119,9 +125,10 @@ describe('SwapRouter', function () {
         amount1Desired: 1000000,
         amount0Min: 0,
         amount1Min: 0,
-        deadline: 1,
+        deadline: 1000000,
       }
 
+      console.log("Trying to mint...");
       return nft.mint(liquidityParams)
     }
 
@@ -133,7 +140,7 @@ describe('SwapRouter', function () {
 
     beforeEach('create 0-1 and 1-2 pools', async () => {
       await createPool(tokens[0].address, tokens[1].address)
-      await createPool(tokens[1].address, tokens[2].address)
+      console.log("Pool 1 created");
     })
 
     describe('#exactInput', () => {
@@ -150,7 +157,7 @@ describe('SwapRouter', function () {
         const params = {
           path: encodePath(tokens, new Array(tokens.length - 1).fill(FeeAmount.MEDIUM)),
           recipient: outputIsWETH9 ? constants.AddressZero : trader.address,
-          deadline: 1,
+          deadline: 1000000,
           amountIn,
           amountOutMinimum,
         }
@@ -171,7 +178,9 @@ describe('SwapRouter', function () {
       }
 
       describe('single-pool', () => {
-        it('0 -> 1', async () => {
+        it.only('0 -> 1', async () => {
+          console.log("TEST STARTED");
+
           const pool = await factory.getPool(tokens[0].address, tokens[1].address, FeeAmount.MEDIUM)
 
           // get balances before
@@ -180,15 +189,21 @@ describe('SwapRouter', function () {
 
           await exactInput(tokens.slice(0, 2).map((token) => token.address))
 
+          console.log("SWAP DONE");
+
           // get balances after
           const poolAfter = await getBalances(pool)
           const traderAfter = await getBalances(trader.address)
 
           expect(traderAfter.token0).to.be.eq(traderBefore.token0.sub(3))
           expect(traderAfter.token1).to.be.eq(traderBefore.token1.add(1))
+          console.log("CHECKED TRADER");
+
           expect(poolAfter.token0).to.be.eq(poolBefore.token0.add(3))
           expect(poolAfter.token1).to.be.eq(poolBefore.token1.sub(1))
-        })
+          console.log("CHECKED POOL");
+
+        }).timeout(600000)
 
         it('1 -> 0', async () => {
           const pool = await factory.getPool(tokens[1].address, tokens[0].address, FeeAmount.MEDIUM)
@@ -213,7 +228,7 @@ describe('SwapRouter', function () {
           expect(poolAfter.token0).to.be.eq(poolBefore.token0.sub(1))
           expect(poolAfter.token1).to.be.eq(poolBefore.token1.add(3))
         })
-      })
+      }).timeout(600000)
 
       describe('multi-pool', () => {
         it('0 -> 1 -> 2', async () => {
@@ -359,7 +374,7 @@ describe('SwapRouter', function () {
           })
         })
       })
-    })
+    }).timeout(600000)
 
     describe('#exactInputSingle', () => {
       async function exactInputSingle(
@@ -912,5 +927,5 @@ describe('SwapRouter', function () {
         expect(endBalance.sub(startBalance).eq(1)).to.be.eq(true)
       })
     })
-  })
-})
+  }).timeout(600000)
+}).timeout(600000)

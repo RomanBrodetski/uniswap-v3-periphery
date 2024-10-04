@@ -11,12 +11,13 @@ import WETH9 from '../contracts/WETH9.json'
 import { Contract } from '@ethersproject/contracts'
 import { constants } from 'ethers'
 
-const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
+const wethFixture = async ([wallet]: any) => {
   const weth9 = (await waffle.deployContract(wallet, {
     bytecode: WETH9.bytecode,
     abi: WETH9.abi,
   })) as IWETH9
 
+  console.log("WETH DEPLOYED");
   return { weth9 }
 }
 
@@ -33,25 +34,25 @@ export const v2FactoryFixture: Fixture<{ factory: Contract }> = async ([wallet])
   return { factory }
 }
 
-const v3CoreFactoryFixture: Fixture<IUniswapV3Factory> = async ([wallet]) => {
+const v3CoreFactoryFixture = async ([wallet]: any) => {
   return (await waffle.deployContract(wallet, {
     bytecode: FACTORY_BYTECODE,
     abi: FACTORY_ABI,
   })) as IUniswapV3Factory
 }
 
-export const v3RouterFixture: Fixture<{
-  weth9: IWETH9
-  factory: IUniswapV3Factory
-  router: MockTimeSwapRouter
-}> = async ([wallet], provider) => {
-  const { weth9 } = await wethFixture([wallet], provider)
-  const factory = await v3CoreFactoryFixture([wallet], provider)
+export const v3RouterFixture = async ([wallet]: any) => {
+  const { weth9 } = await wethFixture([wallet])
+  const factory = await v3CoreFactoryFixture([wallet])
 
-  const router = (await (await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
+  console.log("FACTORY DEPLOYED");
+
+  const router = (await (await ethers.getContractFactory('MockTimeSwapRouter', wallet)).deploy(
     factory.address,
     weth9.address
   )) as MockTimeSwapRouter
+
+  console.log("MOCK ROUTER DEPLOYED");
 
   return { factory, weth9, router }
 }
