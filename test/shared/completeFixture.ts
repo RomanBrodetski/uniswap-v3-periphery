@@ -16,9 +16,9 @@ const completeFixture = async ([wallet]: any) => {
 
   const tokenFactory = await ethers.getContractFactory('TestERC20', wallet)
   const tokens: [TestERC20, TestERC20, TestERC20] = [
-    (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20, // do not use maxu256 to avoid overflowing
-    (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
-    (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
+    (await tokenFactory.deploy(constants.MaxUint256.div(2))) as any, // do not use maxu256 to avoid overflowing
+    (await tokenFactory.deploy(constants.MaxUint256.div(2))) as any,
+    (await tokenFactory.deploy(constants.MaxUint256.div(2))) as any,
   ]
 
   console.log("TOKENS DEPLOYED");
@@ -34,7 +34,7 @@ const completeFixture = async ([wallet]: any) => {
     tokens[0].address,
     // 'ETH' as a bytes32 string
     '0x4554480000000000000000000000000000000000000000000000000000000000'
-  )) as NonfungibleTokenPositionDescriptor
+  )) as any
 
   console.log("DESCRIPTOR DEPLOYED");
 
@@ -43,7 +43,7 @@ const completeFixture = async ([wallet]: any) => {
     factory.address,
     weth9.address,
     nftDescriptor.address
-  )) as MockTimeNonfungiblePositionManager
+  )) as any
 
   console.log("NFT POS MANAGER DEPLOYED");
 

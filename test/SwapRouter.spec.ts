@@ -13,8 +13,8 @@ import { computePoolAddress } from './shared/computePoolAddress'
 
 describe('SwapRouter', function () {
   this.timeout(600000)
-  let wallet: Wallet
-  let trader: Wallet
+  let wallet: any
+  let trader: any
 
   const swapRouterFixture = async (wallets: any) => {
     const { weth9, factory, router, tokens, nft } = await completeFixture(wallets)

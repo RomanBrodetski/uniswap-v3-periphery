@@ -15,7 +15,7 @@ const wethFixture = async ([wallet]: any) => {
   const weth9 = (await waffle.deployContract(wallet, {
     bytecode: WETH9.bytecode,
     abi: WETH9.abi,
-  })) as IWETH9
+  })) as any
 
   console.log("WETH DEPLOYED");
   return { weth9 }
@@ -23,7 +23,7 @@ const wethFixture = async ([wallet]: any) => {
 
 export const v2FactoryFixture: Fixture<{ factory: Contract }> = async ([wallet]) => {
   const factory = await waffle.deployContract(
-    wallet,
+    wallet as any,
     {
       bytecode: FACTORY_V2_BYTECODE,
       abi: FACTORY_V2_ABI,
@@ -38,7 +38,7 @@ const v3CoreFactoryFixture = async ([wallet]: any) => {
   return (await waffle.deployContract(wallet, {
     bytecode: FACTORY_BYTECODE,
     abi: FACTORY_ABI,
-  })) as IUniswapV3Factory
+  })) as any
 }
 
 export const v3RouterFixture = async ([wallet]: any) => {
@@ -50,7 +50,7 @@ export const v3RouterFixture = async ([wallet]: any) => {
   const router = (await (await ethers.getContractFactory('MockTimeSwapRouter', wallet)).deploy(
     factory.address,
     weth9.address
-  )) as MockTimeSwapRouter
+  )) as any
 
   console.log("MOCK ROUTER DEPLOYED");
 

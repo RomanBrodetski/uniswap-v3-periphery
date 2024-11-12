@@ -52,8 +52,13 @@ export default {
       allowUnlimitedContractSize: false,
     },
     evmTestnet: {
-      url: `http://34.71.169.130:3050`,
-      accounts: [],
+      url: `http://localhost:3050`,
+      accounts: [
+        // 0x27FBEc0B5D2A2B89f77e4D3648bBBBCF11784bdE
+        '0x958d95fff8e4ada997cb73c2ea16fe0b377deae16601e2de88a15644a1728faf',
+        // 0x2eF0972bd8AFc29d63b2412508ce5e20219b9A8c
+        '0x2f8d99466350c5d0f7cef5aa99ca7ba735bf531d7d9317f93f460c38758796d9'
+      ],
       gasPrice: 100000000
     },
   },
