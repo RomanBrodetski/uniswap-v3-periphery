@@ -43,6 +43,7 @@ const v3CoreFactoryFixture = async ([wallet]: any) => {
 
 export const v3RouterFixture = async ([wallet]: any) => {
   const { weth9 } = await wethFixture([wallet])
+  console.log("starting to deploy factory")
   const factory = await v3CoreFactoryFixture([wallet])
 
   console.log("FACTORY DEPLOYED");

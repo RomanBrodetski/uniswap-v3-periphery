@@ -52,7 +52,7 @@ export default {
       allowUnlimitedContractSize: false,
     },
     evmTestnet: {
-      url: `http://localhost:3050`,
+      url: `http://localhost:3052`,
       accounts: [
         // 0x27FBEc0B5D2A2B89f77e4D3648bBBBCF11784bdE
         '0x958d95fff8e4ada997cb73c2ea16fe0b377deae16601e2de88a15644a1728faf',
